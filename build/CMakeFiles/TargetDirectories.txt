@@ -1,0 +1,3 @@
+/home/pi/Desktop/ViveToPi/build/CMakeFiles/rebuild_cache.dir
+/home/pi/Desktop/ViveToPi/build/CMakeFiles/viveToPi.dir
+/home/pi/Desktop/ViveToPi/build/CMakeFiles/edit_cache.dir
