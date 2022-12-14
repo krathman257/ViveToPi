@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <bitset>
 
-#define TARGET_BPP 24
+#define TARGET_BPP 32
 
 class Framebuffer{
 private:
@@ -63,13 +63,20 @@ public:
 		printf("Framebuffer successfully initialized\n");
 	}
 
+	void putRow(uchar* row, int x, int y, size_t size){
+		//printf("Putting Row (%d, %d) [%d]\n", x, y, size);
+		int pix_offset = x * (TARGET_BPP / 8) + y * fix_info.line_length;
+
+		memcpy((char*)(fbp+pix_offset), row, size);
+	}
+
 	//Change pixel (x, y) to color c
-	void putPixel(int x, int y, cv::Point3_<uint8_t> c) const {
+	void putPixel(int x, int y, cv::Vec4b c) const {
 		int pix_offset = x * (TARGET_BPP / 8) + y * fix_info.line_length;
 		
-		*((char*)(fbp + pix_offset)) = c.x;
-		*((char*)(fbp + pix_offset + 1)) = c.y;
-		*((char*)(fbp + pix_offset + 2)) = c.z;
+		*((char*)(fbp + pix_offset)) = c[0];
+		*((char*)(fbp + pix_offset + 1)) = c[1];
+		*((char*)(fbp + pix_offset + 2)) = c[2];
 	}	
 
 	//Release memory

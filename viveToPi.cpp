@@ -3,7 +3,7 @@
 int main(int, char**){
 	
 	//Initialize canvas
-	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "/home/pi/Desktop/ViveToPi/Images/");
+	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/");
 
 	//Clear Vive framebuffer
 	canvas.fill(0, 0, 0);

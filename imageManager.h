@@ -27,7 +27,11 @@ public:
 				temp = cv::imread(path + (epdf->d_name));
 				if(temp.data != NULL){
 					images.insert(std::pair<std::string, Layer>(std::string(epdf->d_name), Layer(temp)));
-					std::cout << epdf->d_name << " inserted, Channels=" << temp.channels() << ", DepthID=" << temp.depth() << std::endl;
+					std::cout << 
+						epdf->d_name << 
+						" inserted, Raw Channels=" << temp.channels() << 
+						", Raw DepthID=" << temp.depth() << 
+					std::endl;
 				}
 			}
 			std::cout << images.size() << " images added to ImageManager" << std::endl;

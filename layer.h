@@ -10,12 +10,10 @@
 class Layer{
 private:
 	cv::Mat image;
-	cv::Mat alpha;
 public:
 	Layer() {}
 	Layer(cv::Mat i){
-		image = i;
-		alpha = cv::Mat(image.rows, image.cols, CV_32F, 1.0f);
+		setImage(i);
 	}
 
 	//Overlay with Layer
@@ -41,8 +39,8 @@ public:
 				);
 			}
 		}*/
-		alphaOperator alpha_op(top.getImage(), top.getAlpha(), offsets);
-		image.forEach<cv::Point3_<uint8_t>>(alpha_op);
+		alphaOperator alpha_op(top.getImage(), offsets);
+		image.forEach<cv::Vec4b>(alpha_op);
 
 		//auto stop = getTime();
 		//printTime("Time to overlay images:", start, stop);
@@ -51,45 +49,48 @@ public:
 	//Alpha Functor
 	struct alphaOperator{
 	private:
-		cv::Mat top_image, top_alpha;
+		cv::Mat top_image;
 		int top_y_offset, top_x_offset,
 		    y_start, x_start,
 		    y_end, x_end;
 	public:
-		alphaOperator(cv::Mat ti, cv::Mat ta, int *offsets) : 
-			top_image(ti), top_alpha(ta),
+		alphaOperator(cv::Mat ti, int *offsets) : 
+			top_image(ti),
 			top_y_offset(offsets[0]), top_x_offset(offsets[1]),
 			y_start(offsets[2]), x_start(offsets[3]),
 			y_end(offsets[4]), x_end(offsets[5]) {}
 		
-		void operator()(cv::Point3_<uint8_t> &p, const int *pos) const {
+		void operator()(cv::Vec4b &p, const int *pos) const {
 			if(pos[0] >= y_start && pos[0] < y_end && pos[1] >= x_start && pos[1] < x_end){
-				float a = top_alpha.at<float>(pos[0]-top_y_offset, pos[1]-top_x_offset);
-				cv::Point3_<uint8_t> top_color = top_image.at<cv::Point3_<uint8_t>>(pos[0]-top_y_offset, pos[1]-top_x_offset);
-				p.x = p.x * (1.0 - a) + top_color.x * a;
-				p.y = p.y * (1.0 - a) + top_color.y * a;
-				p.z = p.z * (1.0 - a) + top_color.z * a;
+				cv::Vec4b top_color = top_image.at<cv::Vec4b>(pos[0]-top_y_offset, pos[1]-top_x_offset);
+				float alphaMult = (float)top_color[3] / 255.0;
+				p[0] = p[0] * (1.0 - alphaMult) + top_color[0] * alphaMult;
+				p[1] = p[1] * (1.0 - alphaMult) + top_color[1] * alphaMult;
+				p[2] = p[2] * (1.0 - alphaMult) + top_color[2] * alphaMult;
 			}
 		}
 	};
 
 	//Resize Layer by dimensions
 	void resizeLayer(int x_dim, int y_dim){
-		cv::Size s(x_dim, y_dim);
-		resize(image, image, s, cv::INTER_LINEAR);
-		resize(alpha, alpha, s, cv::INTER_LINEAR);
+		//cv::Size s(x_dim, y_dim);
+		resize(image, image, cv::Size(x_dim, y_dim), cv::INTER_LINEAR);
 	}
 
 	//Resize Layer by scale
 	void resizeLayer(float scale){
-		//auto t1 = getTime();
 		resize(image, image, cv::Size(), scale, scale, cv::INTER_LINEAR);
-		//auto t2 = getTime();
-		resize(alpha, alpha, cv::Size(), scale, scale, cv::INTER_LINEAR);
-		/*auto t3 = getTime();
-		printTime("Resize Image", t1, t2);
-		printTime("Resize Alpha", t2, t3);
-		printf("\n");*/
+	}
+
+	void cropLayer(int width, int height){
+		int x = (image.cols - width) / 2;
+		int y = (image.rows - height) / 2;
+		cropLayer(x, y, width, height);
+	}
+
+	void cropLayer(int x, int y, int width, int height){
+		cv::Mat temp = image(cv::Rect(x, y, width, height));
+		temp.copyTo(image);
 	}
 
 	//Rotate Layer
@@ -103,50 +104,43 @@ public:
 
 		//Apply rotation matrix
 		cv::warpAffine(image, image, rotation_mat, image.size());
-		cv::warpAffine(alpha, alpha, rotation_mat, alpha.size());
 	}
 
 	//Add pixels with alpha
-	void addColorAlpha(cv::Point3_<uint8_t> *bottom, cv::Point3_<uint8_t> top, cv::Mat top_alpha, int x, int y){
+	/*void addColorAlpha(cv::Point3_<uint8_t> *bottom, cv::Point3_<uint8_t> top, cv::Mat top_alpha, int x, int y){
 		float a = top_alpha.at<float>(y, x);
 		bottom->x = bottom->x * (1.0 - a) + top.x * a;
 		bottom->y = bottom->y * (1.0 - a) + top.y * a;
 		bottom->z = bottom->z * (1.0 - a) + top.z * a;
-	}
+	}*/
 
-	//Set image (old and new images must have the same dimensions)
 	void setImage(cv::Mat i){
-		if(i.cols != image.cols || i.rows != image.rows){
-			printf("Error: Unable to set Layer Image, dimensions must be the same\n");
-		}
-		else{
-			image = i;
-		}
+		cv::cvtColor(i, image, cv::COLOR_BGR2BGRA);
 	}
 
 	//Set flat alpha value across image
 	void setAlpha(float val){
-		for(int y = 0; y < alpha.rows; y++){
-			for(int x = 0; x < alpha.cols; x++){
-				alpha.at<float>(y, x) = val;
+		int alphaVal = 255.0 * val;
+		for(int y = 0; y < image.rows; y++){
+			for(int x = 0; x < image.cols; x++){
+				image.at<cv::Vec4b>(y, x)[3] = alphaVal;
 			}
 		}
 	}
 
 	void setAlphaPattern_Circular(int inner, int outer){
-		int yCenter = alpha.rows / 2;
-		int xCenter = alpha.cols / 2;
-		for(int y = 0; y < alpha.rows; y++){
-			for(int x = 0; x < alpha.cols; x++){
+		int yCenter = image.rows / 2;
+		int xCenter = image.cols / 2;
+		for(int y = 0; y < image.rows; y++){
+			for(int x = 0; x < image.cols; x++){
 				float distFromCenter = sqrt(pow(x-xCenter, 2) + pow(y-yCenter, 2));
 				float alpha_raw = (distFromCenter - inner) / (outer - inner);
-				alpha.at<float>(y, x) = std::max(0.0f, std::min(alpha_raw, 1.0f));
+				image.at<cv::Vec4b>(y, x)[3] = std::max(0, std::min((int)(alpha_raw * 255.0), 255));
 			}
 		}
 	}
 
 	cv::Mat getImage(){ return image; }
-	cv::Mat getAlpha(){ return alpha; }
 	int getHeight(){ return image.rows; }
 	int getWidth(){ return image.cols; }
 };

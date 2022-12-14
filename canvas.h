@@ -9,6 +9,7 @@
 #include "helper.h"
 
 #define PI 3.14159
+#define MONITOR_SCALE 0.333
 
 class Canvas{
 private:
@@ -23,6 +24,8 @@ private:
 	Framebuffer *getFramebuffer(int dev){
 		return dev == 1 ? &fb_vive : &fb_monitor;
 	}
+
+	Layer test;
 
 public:
 	//Constructor
@@ -43,23 +46,29 @@ public:
 		//Initialize Camera
 		camera = Camera(cam_dev);
 		camera.printInfo();
+
+		//TEST IMAGE
+		test = images.getImage("image1.png");
+		test.setAlpha(0.5);
 	}
 
 	//Draw camera to framebuffer
 	void drawCamera(bool monitor = false, bool vive = true){
-		draw(camera.readFrame(), monitor, vive);
+		//draw(camera.readFrame(), monitor, vive);
 
-		//auto t1 = getTime();
-		//Layer frame = camera.readFrame();
-		//auto t2 = getTime();
-		//frame.resizeLayer(1.75);
-		//auto t3 = getTime();
-		//draw(frame, monitor, vive);
-		/*auto t4 = getTime();
+		auto t1 = getTime();
+		Layer frame = camera.readFrame();
+		auto t2 = getTime();
+		frame.resizeLayer(2.7);
+		//frame.overlay(test);
+		auto t3 = getTime();
+		draw(frame, monitor, vive);
+		auto t4 = getTime();
 		printTime("Read Frame", t1, t2);
 		printTime("Resize Frame", t2, t3);
 		printTime("Draw Frame", t3, t4);
-		printf("\n");*/
+		printTime("Total Time", t1, t4);
+		printf("\n");
 	}
 
 	//Draw image from ImageManager
@@ -69,45 +78,56 @@ public:
 
 	//Center Mat and draw to framebuffer
 	void draw(Layer l, bool monitor = false, bool vive = true){
-		cv::Mat m = l.getImage();
+		int vive_x_offset = (1080 - l.getWidth()) / 2;
+		int vive_y_offset = (1200 - l.getHeight()) / 2;
+		int mon_x_offset = mon_xres - (1080 * MONITOR_SCALE);
+		int rect_x_start, rect_y_start, rect_width, rect_height;
 
-		int vive_y_offset = (1200 - m.rows) / 2;
-		int vive_x_offset = (1080 - m.cols) / 2;
-		int mon_x_offset = mon_xres - m.cols;
+		if(vive_x_offset < 0){
+			rect_x_start = -1 * vive_x_offset;
+			rect_width = 1080;
+			vive_x_offset = 0;
+		}
+		else{
+			rect_x_start = 0;
+			rect_width = l.getWidth();
+		}
 
-		drawPixel drawPixel_op(monitor, vive, fb_monitor, fb_vive, 0, mon_x_offset, vive_y_offset, vive_x_offset);
-		m.forEach<cv::Point3_<uint8_t>>(drawPixel_op);
-	}
+		if(vive_y_offset < 0){
+			rect_y_start = -1 * vive_y_offset;
+			rect_height = 1200;
+			vive_y_offset = 0;
+		}
+		else{
+			rect_y_start = 0;
+			rect_height = l.getHeight();
+		}
 
-	//Draw Pixel Functor
-	struct drawPixel{
-	private:
-		bool use_monitor, use_vive;
-		Framebuffer fb_monitor, fb_vive;
-		int yOff_monitor, xOff_monitor,
-		    yOff_vive, xOff_vive;
-	public:
-		drawPixel(bool m, bool v, Framebuffer fb_m, Framebuffer fb_v, int yom, int xom, int yov, int xov) :
-			use_monitor(m), use_vive(v), fb_monitor(fb_m), fb_vive(fb_v),
-			yOff_monitor(yom), xOff_monitor(xom), yOff_vive(yov), xOff_vive(xov) {}
+		cv::Mat m = (l.getImage())(cv::Rect(rect_x_start, rect_y_start, rect_width, rect_height));	
 
-		void operator()(cv::Point3_<uint8_t> &p, const int *pos) const {
-			if(use_monitor){
-				fb_monitor.putPixel(pos[1] + xOff_monitor, pos[0] + yOff_monitor, p);
-			}
-			if(use_vive){
-				fb_vive.putPixel(pos[1] + xOff_vive, pos[0] + yOff_vive, p);
-				fb_vive.putPixel(pos[1] + xOff_vive + 1080, pos[0] + yOff_vive, p);
+		int rowSize = sizeof(cv::Vec4b) * m.cols;
+
+		if(vive){
+			for(int i = 0; i < m.rows; i++){
+				fb_vive.putRow(m.ptr(i), vive_x_offset, vive_y_offset+i, rowSize);
+				fb_vive.putRow(m.ptr(i), vive_x_offset+1080, vive_y_offset+i, rowSize);
 			}
 		}
-	};
+		if(monitor){
+			resize(m, m, cv::Size(1080 * MONITOR_SCALE, 1200 * MONITOR_SCALE), cv::INTER_LINEAR);
+			rowSize = sizeof(cv::Vec4b) * m.cols;
+			for(int i = 0; i < m.rows; i++){
+				fb_monitor.putRow(m.ptr(i), mon_x_offset, i, rowSize);
+			}
+		}
+	}
 
 	//Fill framebuffer with color
 	void fill(char r, char g, char b, int dev = 1){		
 		Framebuffer *fb = getFramebuffer(dev);
 		for(int y = 0; y < fb->getVarInfo().yres; y++){
 			for(int x = 0; x < fb->getVarInfo().xres; x++){
-				fb->putPixel(x, y, cv::Point3_<uint8_t>(b,g,r));
+				fb->putPixel(x, y, cv::Vec4b(b,g,r,1));
 			}
 		}
 	}
@@ -119,7 +139,7 @@ public:
 		int x_end = std::min((int)(fb->getVarInfo().xres), x_start+width);
 		for(int y = y_start; y < y_end; y++){
 			for(int x = x_start; x < x_end; x++){
-				fb->putPixel(x, y, cv::Point3_<uint8_t>(b,g,r));
+				fb->putPixel(x, y, cv::Vec4b(b,g,r,1));
 			}
 		}
 	}
