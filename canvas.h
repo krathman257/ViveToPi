@@ -26,6 +26,7 @@ private:
 	}
 
 	Layer test;
+	int rotateSpeed = 5;
 
 public:
 	//Constructor
@@ -47,28 +48,32 @@ public:
 		camera = Camera(cam_dev);
 		camera.printInfo();
 
-		//TEST IMAGE
-		test = images.getImage("image1.png");
-		test.setAlpha(0.5);
+		test = images.getImage("image4.png");
+		test.setAlphaPattern_Circular(10, 100, false, 100, 200);
 	}
 
 	//Draw camera to framebuffer
 	void drawCamera(bool monitor = false, bool vive = true){
 		//draw(camera.readFrame(), monitor, vive);
 
-		auto t1 = getTime();
+		//auto t1 = getTime();
 		Layer frame = camera.readFrame();
-		auto t2 = getTime();
-		frame.resizeLayer(2.7);
+		//auto t2 = getTime();
+		//test.rotateLayer(rotateSpeed);
+		//auto t3 = getTime();
 		//frame.overlay(test);
-		auto t3 = getTime();
+		//auto t4 = getTime();
+		frame.resizeLayer(2.7);
+		//auto t5 = getTime();
 		draw(frame, monitor, vive);
-		auto t4 = getTime();
+		/*auto t6 = getTime();
 		printTime("Read Frame", t1, t2);
-		printTime("Resize Frame", t2, t3);
-		printTime("Draw Frame", t3, t4);
-		printTime("Total Time", t1, t4);
-		printf("\n");
+		printTime("Rotate Frame", t2, t3);
+		printTime("Overlay Frame", t3, t4);
+		printTime("Resize Frame", t4, t5);
+		printTime("Draw Frame", t5, t6);
+		printTime("Total Time", t1, t6);
+		printf("\n");*/
 	}
 
 	//Draw image from ImageManager
@@ -79,6 +84,7 @@ public:
 	//Center Mat and draw to framebuffer
 	void draw(Layer l, bool monitor = false, bool vive = true){
 		int vive_x_offset = (1080 - l.getWidth()) / 2;
+		int vive_x_offset_right = vive_x_offset + 1080;
 		int vive_y_offset = (1200 - l.getHeight()) / 2;
 		int mon_x_offset = mon_xres - (1080 * MONITOR_SCALE);
 		int rect_x_start, rect_y_start, rect_width, rect_height;
@@ -87,6 +93,7 @@ public:
 			rect_x_start = -1 * vive_x_offset;
 			rect_width = 1080;
 			vive_x_offset = 0;
+			vive_x_offset_right = 1080;
 		}
 		else{
 			rect_x_start = 0;
@@ -110,11 +117,11 @@ public:
 		if(vive){
 			for(int i = 0; i < m.rows; i++){
 				fb_vive.putRow(m.ptr(i), vive_x_offset, vive_y_offset+i, rowSize);
-				fb_vive.putRow(m.ptr(i), vive_x_offset+1080, vive_y_offset+i, rowSize);
+				fb_vive.putRow(m.ptr(i), vive_x_offset_right, vive_y_offset+i, rowSize);
 			}
 		}
 		if(monitor){
-			resize(m, m, cv::Size(1080 * MONITOR_SCALE, 1200 * MONITOR_SCALE), cv::INTER_LINEAR);
+			resize(m, m, cv::Size(1080 * MONITOR_SCALE, 1200 * MONITOR_SCALE), cv::INTER_NEAREST);
 			rowSize = sizeof(cv::Vec4b) * m.cols;
 			for(int i = 0; i < m.rows; i++){
 				fb_monitor.putRow(m.ptr(i), mon_x_offset, i, rowSize);
