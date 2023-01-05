@@ -431,3 +431,19 @@ Parsed CXX implicit link information from above output:
   implicit fwks: []
 
 
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /home/pi/Desktop/ViveToPi/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_976b7/fast && make[1]: Entering directory '/home/pi/Desktop/ViveToPi/build/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTC_976b7.dir/build.make CMakeFiles/cmTC_976b7.dir/build
+make[2]: Entering directory '/home/pi/Desktop/ViveToPi/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_976b7.dir/CheckIncludeFile.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_976b7.dir/CheckIncludeFile.c.o   -c /home/pi/Desktop/ViveToPi/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_976b7
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_976b7.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_976b7.dir/CheckIncludeFile.c.o  -o cmTC_976b7 
+make[2]: Leaving directory '/home/pi/Desktop/ViveToPi/build/CMakeFiles/CMakeTmp'
+make[1]: Leaving directory '/home/pi/Desktop/ViveToPi/build/CMakeFiles/CMakeTmp'
+
+
+

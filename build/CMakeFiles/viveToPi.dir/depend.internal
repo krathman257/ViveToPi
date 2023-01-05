@@ -8,11 +8,23 @@ CMakeFiles/viveToPi.dir/viveToPi.cpp.o
  /home/pi/Desktop/ViveToPi/helper.h
  /home/pi/Desktop/ViveToPi/imageManager.h
  /home/pi/Desktop/ViveToPi/layer.h
+ /home/pi/Desktop/ViveToPi/terminal.h
+ /home/pi/Desktop/ViveToPi/text.h
  /home/pi/Desktop/ViveToPi/viveToPi.cpp
+ /home/pi/Documents/simd/src/Simd/SimdAllocator.hpp
+ /home/pi/Documents/simd/src/Simd/SimdConfig.h
+ /home/pi/Documents/simd/src/Simd/SimdLib.h
+ /home/pi/Documents/simd/src/Simd/SimdLib.hpp
+ /home/pi/Documents/simd/src/Simd/SimdPixel.hpp
+ /home/pi/Documents/simd/src/Simd/SimdPoint.hpp
+ /home/pi/Documents/simd/src/Simd/SimdPyramid.hpp
+ /home/pi/Documents/simd/src/Simd/SimdRectangle.hpp
+ /home/pi/Documents/simd/src/Simd/SimdView.hpp
  /usr/local/include/opencv4/opencv2/core.hpp
  /usr/local/include/opencv4/opencv2/core/base.hpp
  /usr/local/include/opencv4/opencv2/core/bufferpool.hpp
  /usr/local/include/opencv4/opencv2/core/check.hpp
+ /usr/local/include/opencv4/opencv2/core/core.hpp
  /usr/local/include/opencv4/opencv2/core/cv_cpu_dispatch.h
  /usr/local/include/opencv4/opencv2/core/cv_cpu_helper.h
  /usr/local/include/opencv4/opencv2/core/cvdef.h

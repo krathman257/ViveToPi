@@ -75,9 +75,7 @@ public:
 	}
 
 	void processInstructions(std::vector<std::vector<std::string>> instructions){
-		mut->lock();
 
-		mut->unlock();
 	}
 
 	void printInstructions(std::vector<std::vector<std::string>> instructions){

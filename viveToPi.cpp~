@@ -8,19 +8,17 @@ int main(int, char**){
 	//Clear terminal
 	system("clear");
 
-	std::mutex mut;
-
 	//Initialize canvas
-	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/", "font2.png", true, false, &mut);
-	std::vector<std::vector<std::string>> instructionList;
+	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/", "font2.png", true, false);
 	Terminal terminal;
+	std::vector<std::vector<std::string>> instructionList;
 
 	//Clear Vive framebuffer
 	canvas.fill(0, 0, 0);
 
 	bool run = true;
 
-	std::thread th(&Terminal::terminalThread, terminal, &canvas, &instructionList, &run, &mut);
+	std::thread th(&Terminal::terminalThread, terminal, &canvas, &instructionList, &run);
 
 	//Draw camera
 	while(run){
