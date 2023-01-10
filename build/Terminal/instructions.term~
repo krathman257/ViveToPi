@@ -1,0 +1,56 @@
+#Basic commands
+help /1
+clear /2
+exit /0
+
+#Load or save instructions
+load /3 STR
+save /4 STR
+
+#Change display output
+display /5 [DISPLAY]
+[DISPLAY] monitor [TRUE/FALSE]
+[DISPLAY] vive [TRUE/FALSE]
+[TRUE/FALSE] true
+[TRUE/FALSE] false
+
+#Print information
+print /6 [PRINT]
+[PRINT] instructions
+
+#Instruction commands
+push /10 [PUSH]
+[PUSH] [INSTRUCTION]
+[PUSH] INT [INSTRUCTION]
+edit /11 INT [INSTRUCTION]
+delete /12 INT
+
+#Instructions: New Layer
+[INSTRUCTION] layer /20 STR [LAYER]
+[LAYER] camera
+[LAYER] image STR
+
+#Instructions: Draw
+[INSTRUCTION] draw /22 STR
+
+#Instructions: Processes
+[INSTRUCTION] process /21 STR [PROCESS]
+
+#Processes: Resize
+[PROCESS] resize /30 [RESIZE]
+[RESIZE] dimensions INT INT
+[RESIZE] scale FLT
+
+#Processes: Rotate
+[PROCESS] rotate /31 FLT
+
+#Processes: Set Alpha
+[PROCESS] alpha /32 [ALPHA]
+[ALPHA] flat INT
+[ALPHA] circular INT INT
+
+#Processes: Add Text
+[PROCESS] text /33 STR
+
+#Processes: Overlay Layer
+[PROCESS] overlay /34 STR

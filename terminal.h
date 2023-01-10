@@ -1,55 +1,32 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
-#include "canvas.h"
+#include <iostream>
+#include <fstream>
+
+#include "terminal_functions.h"
+#include "helper.h"
 
 class Terminal{
 private:
-	Canvas *canvas;
-	std::map<std::string, int> commandList;
-	std::vector<std::vector<std::string>> *instructionList;
-	std::mutex *mut;
-public:
-	enum Command{
-		PUSH,
-		DELETE,
-		DISPLAY,
-		HELP,
-		EXIT,
-		EMPTY,
-		EDIT,
-		TRUE,
-		FALSE,
-		MONITOR,
-		VIVE,
-		INVALID,
-		PRINT_INSTRUCTIONS
+	struct CommandTreeNode{
+		std::string command;
+		int flag = -1;
+		std::vector<CommandTreeNode> nextCommands;
 	};
 
-	Terminal() {
-		
-		//Map input strings to commands
-		commandList["push"] = PUSH;
-		commandList["delete"] = DELETE;
-		commandList["display"] = DISPLAY;
-		commandList["help"] = HELP;
-		commandList["exit"] = EXIT;
-		commandList[""] = EMPTY;
-		commandList["edit"] = EDIT;
-		commandList["true"] = TRUE;
-		commandList["false"] = FALSE;
-		commandList["monitor"] = MONITOR;
-		commandList["vive"] = VIVE;
-		commandList["print_instructions"] = PRINT_INSTRUCTIONS;
+	TerminalFunctions *functions;
+	CommandTreeNode command_root;
+
+public:
+	Terminal(std::string commandFile, TerminalFunctions *tf) {
+		functions = tf;
+		command_root = buildCommandTree(commandFile);
 	}
 
-	void terminalThread(Canvas *c, std::vector<std::vector<std::string>> *il, bool *run, std::mutex *m){
+	void terminalThread(bool *run){
 		std::vector<std::string> command;
 		std::string input = "";
-		Command curr_command;
-		instructionList = il;
-		canvas = c;
-		mut = m;
 
 		displayWelcomeMessage();
 
@@ -57,38 +34,172 @@ public:
 			printf("Please enter a command: ");
 			std::getline(std::cin, input);
 			command = splitString(input, " ");
-			curr_command = getCommand(command[0]);
+			parseCommand(command, command_root);
+		}
+	}
 
-			switch(curr_command){
-				case PUSH:
-					pushInstruction(command);
-					break;
-				case DELETE:
-					deleteInstruction(command);
-					break;
-				case DISPLAY:
-					setDisplayOutput(command);
-					break;
-				case HELP:
-					displayHelpMessage();
-					break;
-				case EXIT:
-					exit(run);
-					break;
-				case EMPTY:
-					break;
-				case EDIT:
-					editInstruction(command);
-					break;
-				case PRINT_INSTRUCTIONS:
-					printInstructions();
-					break;
-				case INVALID:
-					displayInvalidMessage("Command not found");
-					break;
-				default:
-					break;
+	CommandTreeNode buildCommandTree(std::string filename){
+		CommandTreeNode result;
+		std::fstream file;
+		file.open(filename, std::ios::in);
+		if(!file.is_open()){
+			printf("Error: Unable to open file\n");
+			return result;
+		}
+		std::vector<std::vector<std::string>> readLines;
+		std::string line;
+		while(getline(file, line)){
+			if(line != "" && line[0] != '#'){
+				readLines.push_back(splitString(line, " "));
 			}
+		}
+		file.close();
+
+		for(int i = 0; i < readLines.size(); i++){
+			if(!isCommandTreeLabel(readLines[i][0])){
+				result.nextCommands.push_back(buildCommandTreeNode(readLines, i, 0));
+			}
+		}
+
+		printf("Command Tree successfully built\n");
+		//printCommandTree(command_root);
+		return result;
+	}
+
+	CommandTreeNode buildCommandTreeNode(std::vector<std::vector<std::string>> lines, int line_ind, int word_ind){
+		CommandTreeNode result;
+		int offset = 1;
+		result.command = lines[line_ind][word_ind];
+		if(word_ind == lines[line_ind].size() - offset){
+			return result;
+		}
+		else{
+			if(isCommandTreeFlag(lines[line_ind][word_ind + offset])){
+				result.flag = parseInteger(lines[line_ind][word_ind + offset++].substr(1));
+				if(word_ind == lines[line_ind].size() - offset){
+					return result;
+				}
+			}
+			if(isCommandTreeLabel(lines[line_ind][word_ind + offset])){
+				std::vector<CommandTreeNode> nodes;
+				nodes = buildCommandTreeNodes(lines, lines[line_ind][word_ind + offset]);
+				for(CommandTreeNode ctn : nodes){
+					result.nextCommands.push_back(ctn);
+				}
+			}
+			else{
+				result.nextCommands.push_back(buildCommandTreeNode(lines, line_ind, word_ind + offset));
+			}
+		}
+		return result;
+	}
+
+	std::vector<CommandTreeNode> buildCommandTreeNodes(std::vector<std::vector<std::string>> lines, std::string label){
+		std::vector<CommandTreeNode> result;
+		for(int i = 0; i < lines.size(); i++){
+			if(lines[i][0] == label){
+				if(!isCommandTreeLabel(lines[i][1])){
+					CommandTreeNode node;
+					node = buildCommandTreeNode(lines, i, 1);
+					result.push_back(node);
+				}
+				else{
+					std::vector<CommandTreeNode> nodes;
+					nodes = buildCommandTreeNodes(lines, lines[i][1]);
+					for(CommandTreeNode ctn : nodes){
+						result.push_back(ctn);
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	void parseCommand(std::vector<std::string> command, CommandTreeNode ctn){
+		std::vector<int> flags;
+		bool invalid = false;
+		for(std::string word : command){
+			if(ctn.nextCommands.size() == 0){
+				break;
+			}
+			if(!getNextNode(word, &ctn)){
+				displayInvalidMessage("Command not recognized: " + word);
+				invalid = true;
+				break;
+			}
+			if(ctn.flag >= 0){
+				flags.push_back(ctn.flag);
+			}
+		}
+		if(ctn.nextCommands.size() != 0 && !invalid){
+			displayInvalidMessage("Too few arguments");
+			printf("Expected: ");
+			for(CommandTreeNode c : ctn.nextCommands){
+				printf("%s ", c.command.c_str());
+			}
+			printf("\n");
+			invalid = true;
+		}
+
+		/*printf("Found flags: ");
+		for(int f : flags){ printf("%d ", f); }
+		printf("\n");*/
+
+		if(!invalid){
+			functions->processFlags(command, flags);
+		}
+	}
+
+	bool getNextNode(std::string word, CommandTreeNode *ctn){
+		if(ctn->nextCommands.size() == 0){ return false; }
+		for(CommandTreeNode c : ctn->nextCommands){
+			if(c.command == "INT" || c.command == "FLT" || c.command == "STR"){
+				if(c.command == "INT" && canParseInteger(word)){
+					*ctn = c;
+					return true;
+				}
+				if(c.command == "FLT" && canParseFloat(word)){
+					*ctn = c;
+					return true;
+				}	
+				if(c.command == "STR"){
+					*ctn = c;
+					return true;
+				}
+			}
+			else if(c.command == word){
+				*ctn = c;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool isCommandTreeLabel(std::string word){
+		return word[0] == '[' && word[word.length()-1] == ']';
+	}
+
+	bool isCommandTreeFlag(std::string word){
+		return word[0] == '/' && canParseInteger(word.substr(1));
+	}
+
+	void printCommandTree(CommandTreeNode ctn, int length=0, bool first=true){
+		std::string label = ctn.command;
+		if(label.length() > 0){
+			for(int i = 0; i < (first ? 1 : length); i++){
+				printf("-");
+			}
+		}
+		if(ctn.flag >= 0){
+			label += "(" + std::to_string(ctn.flag) + ")";
+		}
+		if(ctn.nextCommands.size() == 0){
+			label += "\n";
+		}
+		printf("%s", label.c_str());
+
+		for(int i = 0; i < ctn.nextCommands.size(); i++){
+			printCommandTree(ctn.nextCommands[i], length+label.length()+1, i == 0);
 		}
 	}
 
@@ -108,157 +219,6 @@ public:
 		return result;
 	}
 
-	void pushInstruction(std::vector<std::string> command){
-		if(command.size() > 1){
-			std::size_t pushIndex = -1;
-			bool indexGiven = false;
-			try{
-				pushIndex = std::stoi(command[1]);
-				indexGiven = true;
-			}
-			catch(std::out_of_range const &ex){}
-			catch(std::invalid_argument const &ex){
-				mut->lock();
-				pushIndex = instructionList->size();
-				mut->unlock();
-			}
-			mut->lock();
-			if(0 <= pushIndex && pushIndex <= instructionList->size()){
-				std::vector<std::string> instruction(command.begin() + (indexGiven ? 2 : 1), command.end());
-				if(isValidInstruction(instruction)){
-					instructionList->insert(instructionList->begin() + pushIndex, instruction);
-				}
-				else{
-					displayInvalidMessage("Invalid instruction");
-				}
-			}
-			else{
-				displayInvalidMessage("Index out of range");
-			}
-			mut->unlock();
-		}
-		else{
-			displayInvalidMessage("Incorrect number of arguments");
-		}
-	}
-
-	void deleteInstruction(std::vector<std::string> command){
-		if(command.size() == 2){
-			std::size_t delIndex = -1;
-			try{
-				delIndex = std::stoi(command[1]);
-			}
-			catch(std::out_of_range const &ex){}
-			catch(std::invalid_argument const &ex){
-				displayInvalidMessage("Invalid index");
-			}
-			mut->lock();
-			if(0 <= delIndex && delIndex < instructionList->size()){
-				instructionList->erase(instructionList->begin() + delIndex);
-			}
-			else{
-				displayInvalidMessage("Index out of range");
-			}
-			mut->unlock();
-		}
-		else{
-			displayInvalidMessage("Incorrect number of arguments");
-		}
-
-	}
-
-	void editInstruction(std::vector<std::string> command){
-		if(command.size() > 2){
-			std::size_t editIndex = -1;
-			try{
-				editIndex = std::stoi(command[1]);
-			}
-			catch(std::out_of_range const &ex){}
-			catch(std::invalid_argument const &ex){
-				displayInvalidMessage("Invalid index");
-			}
-			mut->lock();
-			if(0 <= editIndex && editIndex < instructionList->size()){
-				std::vector<std::string> instruction(command.begin() + 2, command.end());
-				if(isValidInstruction(instruction)){
-					instructionList->at(editIndex) = instruction;
-				}
-				else{
-					displayInvalidMessage("Invalid instruction");
-				}
-			}
-			else{
-				displayInvalidMessage("Index out of range");
-			}
-			mut->unlock();
-		}
-		else{
-			displayInvalidMessage("Incorrect number of arguments");
-		}
-	}
-
-	bool isValidInstruction(std::vector<std::string> instruction){
-		return true;
-	}
-
-	void printInstructions(){
-		canvas->printInstructions(*instructionList);
-	}
-
-	//Change which displays video is output to
-	void setDisplayOutput(std::vector<std::string> command){
-
-		//Verify command size
-		if(command.size() == 3){
-
-			//Parse boolean
-			bool output, valid = true;
-			Command curr_command;
-
-			curr_command = getCommand(command[2]);
-			switch(curr_command){
-				case TRUE:
-					output = true;
-					break;
-				case FALSE:
-					output = false;
-					break;
-				default:
-					valid = false;
-					displayInvalidMessage("Command not recognized: " + command[2]);
-					break;
-			}
-
-			//Parse display output
-			if(valid){
-				curr_command = getCommand(command[1]);
-				switch(curr_command){
-					case MONITOR:
-						canvas->setMonitorOutput(output);
-						break;
-					case VIVE:
-						canvas->setViveOutput(output);
-						break;
-					default:
-						displayInvalidMessage("Command not recognized: " + command[1]);
-						break;
-				}
-			}
-		}
-		else{
-			displayInvalidMessage("Incorrect number of arguments");
-		}
-	}
-
-	void exit(bool *run){
-		*run = false;
-		printf("Exiting program. Goodbye...\n");
-	}
-
-	void displayInvalidMessage(std::string message){
-		printf("Invalid command: %s\n", message.c_str());
-	}
-
 	void displayWelcomeMessage(){
 		printf("******************\n"
 		       "* Welcome to the *\n"
@@ -266,42 +226,6 @@ public:
 		       "*  System  Menu  *\n"
 		       "******************\n"
 		      );
-	}
-
-	void displayHelpMessage(){
-		printf("*************************************************************\n"
-		       "* HELP                                                      *\n"
-		       "*************************************************************\n"
-		       "* help -> Display this message                              *\n"
-		       "* print_instructions -> Print the current instruction list  *\n"
-		       "* push [INSTRUCTION] -> Add a new instruction at the end of *\n"
-		       "*                       the list                            *\n"
-		       "* push [#] [INSTRUCTION] -> Add a new instruction directly  *\n"
-		       "*                          after Instruction [#]            *\n"
-		       "* edit [#] [INSTRUCTION] -> Edit Instruction [#]            *\n"
-		       "* delete [#] -> Delete Instruction [#]                      *\n"
-		       "*                                                           *\n"
-		       "* display [vive | monitor] [true | false] -> set the video  *\n"
-		       "*                                            output         *\n"
-		       "* exit -> Exit the program                                  *\n"
-		       "*************************************************************\n"
-		       "* INSTRUCTIONS                                              *\n"
-		       "*************************************************************\n"
-		       "* Under Development                                         *\n"
-		       "*************************************************************\n"
-		      );
-	}
-
-	bool verifyCommand(std::string input, Command c){
-		return commandList.find(input)->second == c;
-	}
-
-	Command getCommand(std::string input){
-		std::map<std::string, int>::iterator position = commandList.find(input);
-		if(position == commandList.end()){
-			return INVALID;
-		}
-		return (Command)(position->second);
 	}
 };
 

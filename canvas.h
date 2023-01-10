@@ -69,9 +69,6 @@ public:
 
 		blankScreen = Layer(cv::Size(1080, 1200), cv::Vec4b(0, 0, 0, 255));
 		setOutput(m, v);
-
-		test = images.getImage("image4.png");
-		test.setAlphaPattern_Circular(10, 100, false, 100, 200);
 	}
 
 	void processInstructions(std::vector<std::vector<std::string>> instructions){

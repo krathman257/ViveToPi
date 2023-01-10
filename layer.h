@@ -15,6 +15,7 @@
 class Layer{
 private:
 	cv::Mat image;
+	std::string name = "";
 public:
 	Layer() {}
 	Layer(cv::Mat i){
@@ -108,6 +109,14 @@ public:
 
 	void setImage(cv::Mat i){
 		cv::cvtColor(i, image, cv::COLOR_BGR2BGRA);
+	}
+
+	void setName(std::string n){
+		name = n;
+	}
+
+	std::string getName(){
+		return name;
 	}
 
 	//Set flat alpha value across image

@@ -89,8 +89,18 @@ helper.h
 /home/pi/Desktop/ViveToPi/helper.h
 
 /home/pi/Desktop/ViveToPi/terminal.h
-canvas.h
-/home/pi/Desktop/ViveToPi/canvas.h
+iostream
+-
+fstream
+-
+terminal_functions.h
+/home/pi/Desktop/ViveToPi/terminal_functions.h
+helper.h
+/home/pi/Desktop/ViveToPi/helper.h
+
+/home/pi/Desktop/ViveToPi/terminal_functions.h
+string
+-
 
 /home/pi/Desktop/ViveToPi/text.h
 opencv2/core.hpp
@@ -109,6 +119,8 @@ canvas.h
 /home/pi/Desktop/ViveToPi/canvas.h
 terminal.h
 /home/pi/Desktop/ViveToPi/terminal.h
+terminal_functions.h
+/home/pi/Desktop/ViveToPi/terminal_functions.h
 
 /home/pi/Documents/simd/src/Simd/SimdAllocator.hpp
 Simd/SimdLib.h

@@ -3,24 +3,25 @@
 
 #include "canvas.h"
 #include "terminal.h"
+#include "terminal_functions.h"
 
 int main(int, char**){
 	//Clear terminal
 	system("clear");
 
 	std::mutex mut;
+	bool run = true;
 
 	//Initialize canvas
-	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/", "font2.png", true, false, &mut);
 	std::vector<std::vector<std::string>> instructionList;
-	Terminal terminal;
+	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/", "font2.png", true, false, &mut);
+	TerminalFunctions terminalFunctions(&canvas, &instructionList, &mut, &run);
+	Terminal terminal("./Terminal/instructions.term", &terminalFunctions);
 
 	//Clear Vive framebuffer
 	canvas.fill(0, 0, 0);
 
-	bool run = true;
-
-	std::thread th(&Terminal::terminalThread, terminal, &canvas, &instructionList, &run, &mut);
+	std::thread th(&Terminal::terminalThread, terminal, &run);
 
 	//Draw camera
 	while(run){

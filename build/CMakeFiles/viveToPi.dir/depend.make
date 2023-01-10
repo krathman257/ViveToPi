@@ -8,6 +8,7 @@ CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../helper.h
 CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../imageManager.h
 CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../layer.h
 CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../terminal.h
+CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../terminal_functions.h
 CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../text.h
 CMakeFiles/viveToPi.dir/viveToPi.cpp.o: ../viveToPi.cpp
 CMakeFiles/viveToPi.dir/viveToPi.cpp.o: /home/pi/Documents/simd/src/Simd/SimdAllocator.hpp
