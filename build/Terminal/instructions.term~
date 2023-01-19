@@ -38,16 +38,16 @@ delete /13 INT
 
 #Processes: Resize
 [PROCESS] resize /30 [RESIZE]
-[RESIZE] dimensions INT INT
-[RESIZE] scale FLT
+[RESIZE] dimensions /300 INT INT
+[RESIZE] scale /301 FLT
 
 #Processes: Rotate
 [PROCESS] rotate /31 FLT
 
 #Processes: Set Alpha
 [PROCESS] alpha /32 [ALPHA]
-[ALPHA] flat INT
-[ALPHA] circular INT INT
+[ALPHA] flat /320 FLT
+[ALPHA] circular /321 INT INT
 
 #Processes: Add Text
 [PROCESS] text /33 STR

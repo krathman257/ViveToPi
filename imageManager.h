@@ -48,6 +48,11 @@ public:
 		}
 		return i->second;
 	}
+
+	bool doesImageExist(std::string name){
+		std::map<std::string, Layer>::iterator i = images.find(name);
+		return i != images.end();
+	}
 };
 
 #endif

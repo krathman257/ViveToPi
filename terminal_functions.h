@@ -22,28 +22,24 @@ public:
 	}
 
 	void processInstructions(){
-		int layerCount = 0, currLayer = 0;
-		for(Instruction inst : instructionList){
-			if(containsFlag(inst, 20)){ layerCount++; }
-		}
-		Layer layerArr[layerCount];
+		std::vector<Layer> layers;
 
 		for(Instruction inst : instructionList){
 			if(containsFlag(inst, 20)){
-				layerArr[currLayer++] = processInstructions_getLayer(inst);
+				layers.push_back(processInstructions_getLayer(inst));
 			}
 			else if(containsFlag(inst, 21)){
-				for(int i = 0; i < layerCount; i++){
-					if(layerArr[i].getName() == inst.command[1]){
-						processInstructions_processLayer(inst, layerArr, i);
+				for(int i = 0; i < layers.size(); i++){
+					if(layers[i].getName() == inst.command[1]){
+						processInstructions_processLayer(inst, &layers, i);
 						break;
 					}
 				}
 			}
 			else if(containsFlag(inst, 22)){
-				for(int i = 0; i < layerCount; i++){
-					if(layerArr[i].getName() == inst.command[1]){
-						canvas->draw(layerArr[i]);
+				for(int i = 0; i < layers.size(); i++){
+					if(layers[i].getName() == inst.command[1]){
+						canvas->draw(layers[i]);
 						break;
 					}
 				}
@@ -73,45 +69,44 @@ public:
 		return result;
 	}
 
-	void processInstructions_processLayer(Instruction inst, Layer layerArr[], int index){
-		Layer *layer = layerArr + index;
+	void processInstructions_processLayer(Instruction inst, std::vector<Layer> *layers, int index){
 		for(int f : inst.flags){
 			switch(f){
 				//Resize
 				case 30:
 					//Resize dimensions
 					if(containsFlag(inst, 300)){
-						layer->resizeLayer(parseInteger(inst.command[4]), parseInteger(inst.command[5]));
+						(*layers)[index].resizeLayer(parseInteger(inst.command[4]), parseInteger(inst.command[5]));
 					}
 					//Resize scale
 					else{
-						layer->resizeLayer(parseFloat(inst.command[4]));
+						(*layers)[index].resizeLayer(parseFloat(inst.command[4]));
 					}
 					break;
 				//Rotate
 				case 31:
-					layer->rotateLayer(parseInteger(inst.command[3]));
+					(*layers)[index].rotateLayer(parseInteger(inst.command[3]));
 					break;
 				//Alpha
 				case 32:
 					//Alpha flat
 					if(containsFlag(inst, 320)){
-						layer->setAlpha(parseFloat(inst.command[4]));
+						(*layers)[index].setAlpha(parseFloat(inst.command[4]));
 					}
 					//Alpha circular
 					else{
-						layer->setAlphaPattern_Circular(parseInteger(inst.command[4]), parseInteger(inst.command[5]));
+						(*layers)[index].setAlphaPattern_Circular(parseInteger(inst.command[4]), parseInteger(inst.command[5]));
 					}
 					break;
 				//Text
 				case 33:
-					layer->overlayText(inst.command[3], canvas->getText());
+					(*layers)[index].overlayText(inst.command[3], canvas->getText());
 					break;
 				//Overlay
 				case 34:
-					for(int i = 0; i < index; i++){
-						if(layerArr[i].getName() == inst.command[3]){
-							layer->overlay(layerArr[i]);
+					for(int i = 0; i < layers->size(); i++){
+						if((*layers)[i].getName() == inst.command[3]){
+							(*layers)[index].overlay((*layers)[i]);
 							break;
 						}
 					}
@@ -250,20 +245,35 @@ public:
 
 	void refactorInstructions(){
 		for(int i = 0; i < instructionList.size(); i++){
-			if(containsFlag(instructionList[i], 20)){ }
+			//Layer flag
+			if(containsFlag(instructionList[i], 20)){ 
+				//Image flag
+				if(containsFlag(instructionList[i], 202)){
+					if(!(doesImageExist(instructionList[i]))){
+						instructionList.erase(instructionList.begin() + i--);
+						printf("Irrelevant instruction found, erasing\n");
+					}
+				}
+			}
+
+			//Process flag
 			else if(containsFlag(instructionList[i], 21)){
 				if((!isInstructionValid(instructionList[i], i)) ||
 				   (!isInstructionValid(instructionList[i], i, 3) && containsFlag(instructionList[i], 34))){
 					instructionList.erase(instructionList.begin() + i--);
 					printf("Irrelevant instruction found, erasing\n");
 				}
+
 			}
+
+			//Draw flag
 			else if(containsFlag(instructionList[i], 22)){
 				if(!isInstructionValid(instructionList[i], i)){
 					instructionList.erase(instructionList.begin() + i--);
 					printf("Irrelevant instruction found, erasing\n");
 				}
 			}
+
 			else{
 				printf("Error: Unrecognized instruction: %s\n", instructionList[i].command[0].c_str());
 			}
@@ -287,6 +297,10 @@ public:
 			}
 		}
 		return false;
+	}
+
+	bool doesImageExist(Instruction inst){
+		return canvas->getImageManager().doesImageExist(inst.command[inst.command.size()-1]);
 	}
 
 	void printInfo(Instruction inst){

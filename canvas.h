@@ -184,6 +184,10 @@ public:
 		}
 	}
 
+	ImageManager getImageManager(){
+		return images;
+	}
+
 	Text getText(){
 		return text;
 	}
