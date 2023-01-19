@@ -9,13 +9,7 @@ int main(int, char**){
 	//Clear terminal
 	system("clear");
 
-	std::mutex d;
-	std::mutex n;
-	std::mutex l;
 	priorityMutex mut;
-	mut.data = &d;
-	mut.next = &n;
-	mut.low = &l;
 	//std::mutex mut;
 	bool run = true;
 

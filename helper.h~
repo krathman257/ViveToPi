@@ -22,7 +22,7 @@ void printTime(std::string message, std::chrono::time_point<std::chrono::high_re
 
 //Priority mutex locking/unlocking
 //https://stackoverflow.com/questions/11666610/how-to-give-priority-to-privileged-thread-in-mutex-locking
-struct priorityMutex{
+typedef struct priorityMutex{
 	std::mutex *data;
 	std::mutex *next;
 	std::mutex *low;

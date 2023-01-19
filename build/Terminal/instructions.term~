@@ -9,26 +9,26 @@ save /4 STR
 
 #Change display output
 display /5 [DISPLAY]
-[DISPLAY] monitor [TRUE/FALSE]
-[DISPLAY] vive [TRUE/FALSE]
-[TRUE/FALSE] true
-[TRUE/FALSE] false
+[DISPLAY] monitor /51 [TRUE/FALSE]
+[DISPLAY] vive /52 [TRUE/FALSE]
+[TRUE/FALSE] true /53
+[TRUE/FALSE] false /54
 
 #Print information
 print /6 [PRINT]
-[PRINT] instructions
+[PRINT] instructions /61
 
 #Instruction commands
 push /10 [PUSH]
 [PUSH] [INSTRUCTION]
-[PUSH] INT [INSTRUCTION]
-edit /11 INT [INSTRUCTION]
-delete /12 INT
+[PUSH] INT /11 [INSTRUCTION]
+edit /12 INT [INSTRUCTION]
+delete /13 INT
 
 #Instructions: New Layer
 [INSTRUCTION] layer /20 STR [LAYER]
-[LAYER] camera
-[LAYER] image STR
+[LAYER] camera /201
+[LAYER] image /202 STR
 
 #Instructions: Draw
 [INSTRUCTION] draw /22 STR

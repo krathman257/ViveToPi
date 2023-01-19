@@ -184,10 +184,6 @@ public:
 		}
 	}
 
-	Text getText(){
-		return text;
-	}
-
 	//Always run on exit
 	void closeAll(){
 		camera.closeCamera();

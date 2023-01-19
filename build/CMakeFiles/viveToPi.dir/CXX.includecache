@@ -101,6 +101,8 @@ helper.h
 /home/pi/Desktop/ViveToPi/terminal_functions.h
 string
 -
+layer.h
+/home/pi/Desktop/ViveToPi/layer.h
 
 /home/pi/Desktop/ViveToPi/text.h
 opencv2/core.hpp
