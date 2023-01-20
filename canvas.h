@@ -101,7 +101,10 @@ public:
 	}
 
 	//Center Mat and draw to framebuffer
-	void draw(Layer l, bool drawMonitor, bool drawVive){
+	void draw(Layer l_raw, bool drawMonitor, bool drawVive){
+		Layer l = blankScreen.copy();
+		l.overlay(l_raw);
+
 		int vive_x_offset = (1080 - l.getWidth()) / 2;
 		int vive_x_offset_right = vive_x_offset + 1080;
 		int vive_y_offset = (1200 - l.getHeight()) / 2;

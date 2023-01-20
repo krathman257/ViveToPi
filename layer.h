@@ -26,6 +26,13 @@ public:
 		setImage(i);
 	}
 
+	Layer copy(){
+		Layer result;
+		result.setImage(image);
+		result.setName(name);
+		return result;
+	}
+
 	//Overlay with Layer
 	void overlay(Layer top){
 		overlay(top, (image.cols - top.getWidth()) / 2, (image.rows - top.getHeight()) / 2);

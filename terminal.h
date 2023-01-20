@@ -122,26 +122,29 @@ public:
 		std::vector<int> flags;
 		bool invalid = false;
 		for(std::string word : command){
-			if(ctn.nextCommands.size() == 0){
-				break;
-			}
 			if(!getNextNode(word, &ctn)){
 				displayInvalidMessage("Command not recognized: " + word);
 				invalid = true;
 				break;
 			}
-			if(ctn.flag >= 0){
+			if(ctn.flag >= 0 && !containsFlag(flags, ctn.flag)){
 				flags.push_back(ctn.flag);
 			}
 		}
 		if(ctn.nextCommands.size() != 0 && !invalid){
-			displayInvalidMessage("Too few arguments");
-			printf("Expected: ");
+			bool STR_R_found = false;
 			for(CommandTreeNode c : ctn.nextCommands){
-				printf("%s ", c.command.c_str());
+				STR_R_found = (STR_R_found || c.command == "STR_R");
 			}
-			printf("\n");
-			invalid = true;
+			if(!STR_R_found){
+				displayInvalidMessage("Too few arguments");
+				printf("Expected: ");
+				for(CommandTreeNode c : ctn.nextCommands){
+					printf("%s ", c.command.c_str());
+				}
+				printf("\n");
+				invalid = true;
+			}
 		}
 
 		/*printf("Found flags: ");
@@ -160,7 +163,7 @@ public:
 	bool getNextNode(std::string word, CommandTreeNode *ctn){
 		if(ctn->nextCommands.size() == 0){ return false; }
 		for(CommandTreeNode c : ctn->nextCommands){
-			if(c.command == "INT" || c.command == "FLT" || c.command == "STR"){
+			if(c.command == "INT" || c.command == "FLT" || c.command == "STR" || c.command == "STR_R"){
 				if(c.command == "INT" && canParseInteger(word)){
 					*ctn = c;
 					return true;
@@ -173,9 +176,21 @@ public:
 					*ctn = c;
 					return true;
 				}
+				if(c.command == "STR_R"){
+					return true;
+				}
 			}
 			else if(c.command == word){
 				*ctn = c;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool containsFlag(std::vector<int> flags, int query){
+		for(int f : flags){
+			if(f == query){
 				return true;
 			}
 		}
@@ -208,22 +223,6 @@ public:
 		for(int i = 0; i < ctn.nextCommands.size(); i++){
 			printCommandTree(ctn.nextCommands[i], length+label.length()+1, i == 0);
 		}
-	}
-
-	//Split input by delimiter
-	std::vector<std::string> splitString(std::string input, std::string delim){
-		std::vector<std::string> result;
-		int delimPos = -1;
-
-		//While delimiter found, push found segment
-		while((delimPos = input.find(delim)) != std::string::npos){
-			result.push_back(input.substr(0, delimPos));
-			input.erase(0, delimPos + delim.length());
-		}
-
-		//Push last segment
-		result.push_back(input);
-		return result;
 	}
 
 	void displayWelcomeMessage(){

@@ -50,7 +50,7 @@ delete /13 INT
 [ALPHA] circular /321 INT INT
 
 #Processes: Add Text
-[PROCESS] text /33 STR
+[PROCESS] text /33 STR_R
 
 #Processes: Overlay Layer
 [PROCESS] overlay /34 STR

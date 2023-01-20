@@ -1,3 +1,14 @@
+#Script to insert command tree
+#Designed by Kyle Rathman
+
+#"word [KEYWORD]" leads to lines starting with [KEYWORD]
+#INT accepts any integer value
+#FLT accepts any float value
+#STR accepts any string value
+#STR_R accepts any string and includes spaces
+# ^- Command tree node will recurse here, only
+#    use as the end of a branch!
+
 #Basic commands
 help /1
 clear /2
@@ -50,7 +61,7 @@ delete /13 INT
 [ALPHA] circular /321 INT INT
 
 #Processes: Add Text
-[PROCESS] text /33 STR
+[PROCESS] text /33 STR_R
 
 #Processes: Overlay Layer
 [PROCESS] overlay /34 STR

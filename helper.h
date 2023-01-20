@@ -94,4 +94,20 @@ void displayInvalidMessage(std::string message){
 	printf("Invalid command: %s\n", message.c_str());
 }
 
+//Split input by delimiter
+std::vector<std::string> splitString(std::string input, std::string delim){
+	std::vector<std::string> result;
+	int delimPos = -1;
+
+	//While delimiter found, push found segment
+	while((delimPos = input.find(delim)) != std::string::npos){
+		result.push_back(input.substr(0, delimPos));
+		input.erase(0, delimPos + delim.length());
+	}
+
+	//Push last segment
+	result.push_back(input);
+	return result;
+}
+
 #endif

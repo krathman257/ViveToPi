@@ -2,6 +2,7 @@
 #define TERMINAL_FUNCTIONS_H
 
 #include <string>
+#include <fstream>
 
 #include "layer.h"
 
@@ -19,6 +20,8 @@ public:
 	TerminalFunctions(Canvas *c, bool *r){
 		canvas = c;
 		run = r;
+
+		loadInstructions("default");
 	}
 
 	void processInstructions(){
@@ -58,7 +61,7 @@ public:
 					break;
 				//Image
 				case 202:
-					result = canvas->getImageFrame(inst.command[3]);
+					result = (canvas->getImageFrame(inst.command[3])).copy();
 					break;
 				default:
 					break;
@@ -70,6 +73,7 @@ public:
 	}
 
 	void processInstructions_processLayer(Instruction inst, std::vector<Layer> *layers, int index){
+		std::string input = "";
 		for(int f : inst.flags){
 			switch(f){
 				//Resize
@@ -100,7 +104,13 @@ public:
 					break;
 				//Text
 				case 33:
-					(*layers)[index].overlayText(inst.command[3], canvas->getText());
+					for(int i = 3; i < inst.command.size(); i++){
+						input += inst.command[i];
+						if(i != inst.command.size() - 1){
+							input += " ";
+						}
+					}
+					(*layers)[index].overlayText(input, canvas->getText());
 					break;
 				//Overlay
 				case 34:
@@ -145,6 +155,12 @@ public:
 				case 2: //Clear
 					clearInstructions();
 					break;
+				case 3: //Load
+					loadInstructions(inst);
+					break;
+				case 4: //Save
+					saveInstructions(inst);
+					break;
 				case 5: //Change display
 					setDisplayOutput(inst);
 					break;
@@ -173,6 +189,58 @@ public:
 	//Clear instruction list
 	void clearInstructions(){
 		instructionList = { };
+	}
+
+	//Save current instruction list to file
+	void saveInstructions(Instruction inst){
+		std::ofstream saveFile;
+		saveFile.open("./InstructionLists/" + inst.command[1] + ".inli");
+		for(int i = 0; i < instructionList.size(); i++){
+			for(std::string c : instructionList[i].command){
+				saveFile << c;
+				saveFile << " ";
+			}
+			saveFile << '\n';
+			for(int f : instructionList[i].flags){
+				saveFile << f;
+				saveFile << " ";
+			}
+			saveFile << '\n';
+		}
+		saveFile.close();
+		printf("Instruction List saved to file: ./InstructionLists/%s.inli\n", inst.command[1].c_str());
+	}
+
+	//Load instruction list from file
+	void loadInstructions(Instruction inst){
+		loadInstructions(inst.command[1]);
+	}
+
+	void loadInstructions(std::string filename){
+		std::ifstream loadFile;
+		loadFile.open("./InstructionLists/" + filename + ".inli");
+		if(!loadFile.is_open()){
+			printf("Unable to load ./InstructionLists/%s.inli\n", filename.c_str());
+		}
+		else{
+			clearInstructions();
+			std::vector<std::string> readFlags;
+			std::string input;
+			while(getline(loadFile, input)){
+				Instruction inst;
+				inst.command = splitString(input, " ");
+				getline(loadFile, input);
+				readFlags = splitString(input, " ");
+				for(std::string f : readFlags){
+					if(f != ""){
+						inst.flags.push_back(std::stoi(f));
+					}
+				}
+				instructionList.push_back(inst);
+			}
+			printf("Instruction List loaded from file: ./InstructionList/%s.inli\n", filename.c_str());
+		}
+		loadFile.close();
 	}
 
 	//Change which displays video is output to
@@ -263,7 +331,6 @@ public:
 					instructionList.erase(instructionList.begin() + i--);
 					printf("Irrelevant instruction found, erasing\n");
 				}
-
 			}
 
 			//Draw flag
@@ -321,6 +388,10 @@ public:
 		       "* help -> Display this message                              *\n"
 		       "* print instructions -> Print the current instruction list  *\n"
 		       "* clear -> Delete all instructions in the instruction list  *\n"
+		       "* save [NAME] -> Save the current instruction list in       *\n"
+		       "*                file [NAME].inli                           *\n"
+		       "* load [NAME] -> Load an instruction list from file         *\n"
+		       "*                [NAME].inli                                *\n"
 		       "* push [INSTRUCTION] -> Add a new instruction at the end of *\n"
 		       "*                       the list                            *\n"
 		       "* push [#] [INSTRUCTION] -> Push a new instruction directly *\n"

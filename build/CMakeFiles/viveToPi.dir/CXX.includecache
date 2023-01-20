@@ -101,6 +101,8 @@ helper.h
 /home/pi/Desktop/ViveToPi/terminal_functions.h
 string
 -
+fstream
+-
 layer.h
 /home/pi/Desktop/ViveToPi/layer.h
 

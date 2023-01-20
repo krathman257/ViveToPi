@@ -20,7 +20,7 @@ int main(int, char**){
 	bool run = true;
 
 	//Initialize objects
-	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/", "font2.png", true, false);
+	Canvas canvas("/dev/fb1", "/dev/fb0", 0, "./Images/", "font2.png", true, true);
 	TerminalFunctions terminalFunctions(&canvas, &run);
 	Terminal terminal("./Terminal/instructions.term", &terminalFunctions, mut);
 
