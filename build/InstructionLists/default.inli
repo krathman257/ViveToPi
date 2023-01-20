@@ -1,6 +1,6 @@
-layer CAM camera    
-10 20 201 
-process CAM resize scale 2.0 
-10 11 21 30 301 
-draw CAM    
-10 22 
+layer CAM camera
+10 20 201
+process CAM resize scale 2.0
+10 21 30 301
+draw CAM
+10 22

@@ -5,6 +5,7 @@
 #include <string>
 
 #include "layer.h"
+#include "helper.h"
 
 class Text{
 public:
@@ -66,32 +67,31 @@ public:
 		int xDim = 0, yDim = 1, curr_x = 0, delimPos = 0;
 		std::vector<cv::Mat> wordList;
 		std::string delim = " ";
-		do{
-			delimPos = text.find(delim);
-			std::string word = delimPos > -1 ? text.substr(0, delimPos) : text;
-			while(word.length() > styling.maxCharWidth){
-				wordList.push_back(getLine(word.substr(0, styling.maxCharWidth)));
-				yDim += 1;
-				xDim = styling.maxCharWidth;
-				curr_x = 0;
-				word = word.substr(styling.maxCharWidth + 1, word.length());
-				delimPos = text.find(delim); 
+
+		std::vector<std::string> words = splitString(text, " ");
+		for(int i = 0; i < words.size(); i++){
+			if(words[i] == ""){
+				words[i] = " ";
 			}
+			while(words[i].length() > styling.maxCharWidth){
+				std::string longWord = words[i];
+				words[i] = longWord.substr(0, styling.maxCharWidth - 1);
+				words.insert(words.begin() + i++ + 1, longWord.substr(styling.maxCharWidth));
+			}
+		}
+
+		for(std::string word : words){
 			wordList.push_back(getLine(word));
 
 			if(curr_x + word.length() >= styling.maxCharWidth){
 				yDim += 1;
 				curr_x = 0;
 			}
-			curr_x += word.length() + (delimPos > -1 ? 1 : 0);
+			curr_x += word.length() + 1;
 			if(curr_x > xDim){
 				xDim = curr_x;
 			}
-			if(delimPos > -1){
-				text.erase(0, delimPos + 1);
-			}
 		}
-		while(delimPos > -1);
 
 		yDim *= 8;
 		xDim *= 8;

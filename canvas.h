@@ -59,7 +59,7 @@ public:
 		//Initialize Text
 		text = Text(textPath);
 		textStyling = text.getStyling();
-		textStyling.maxCharWidth = 15;
+		textStyling.maxCharWidth = 10;
 		textStyling.fontSize = 3;
 		text.setStyling(textStyling);
 

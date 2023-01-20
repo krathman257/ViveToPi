@@ -113,6 +113,8 @@ string
 -
 layer.h
 /home/pi/Desktop/ViveToPi/layer.h
+helper.h
+/home/pi/Desktop/ViveToPi/helper.h
 
 /home/pi/Desktop/ViveToPi/viveToPi.cpp
 stdlib.h

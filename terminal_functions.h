@@ -196,14 +196,18 @@ public:
 		std::ofstream saveFile;
 		saveFile.open("./InstructionLists/" + inst.command[1] + ".inli");
 		for(int i = 0; i < instructionList.size(); i++){
-			for(std::string c : instructionList[i].command){
-				saveFile << c;
-				saveFile << " ";
+			for(int c = 0; c < instructionList[i].command.size(); c++){
+				saveFile << instructionList[i].command[c];
+				if(c != instructionList[i].command.size() - 1){
+					saveFile << " ";
+				}
 			}
 			saveFile << '\n';
-			for(int f : instructionList[i].flags){
-				saveFile << f;
-				saveFile << " ";
+			for(int f = 0; f < instructionList[i].flags.size(); f++){
+				saveFile << instructionList[i].flags[f];
+				if(f != instructionList[i].flags.size() - 1){
+					saveFile << " ";
+				}
 			}
 			saveFile << '\n';
 		}
@@ -374,6 +378,13 @@ public:
 		if(containsFlag(inst, 61)){
 			printInstructions();
 		}
+	}
+
+	void printInstruction(Instruction inst){
+		for(std::string w : inst.command){
+			printf("%s ", w.c_str());
+		}
+		printf("\n");
 	}
 
 	void exit(bool *run){
