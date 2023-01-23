@@ -103,7 +103,7 @@ The terminal verifies commands through a tree structure generated from a flat-te
 
 ### Minor Features
 
-- Refactor `public`/`private` variable and methods.
+- Refactor `public`/`private` variables and methods.
 - Refactor `terminl_functions.h` as an interface, easing reuse of `terminal.h` in other programs.
 - Make instruction list persistantly display on screen, removing the need to use the `print instructions` command.
 - Add flat-text file containing programs default settings, such as `Text` settings and default display outputs.
