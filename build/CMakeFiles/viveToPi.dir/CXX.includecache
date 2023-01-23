@@ -47,8 +47,6 @@ unistd.h
 -
 fcntl.h
 -
-bitset
--
 
 /home/pi/Desktop/ViveToPi/helper.h
 chrono

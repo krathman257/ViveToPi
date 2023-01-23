@@ -42,18 +42,14 @@ public:
 
 	//Print camera and frame properties
 	void printInfo(){
-		//cap.read(rawFrame);
 		readFrame();
 
-		std::cout << "Capture Device API: " << cap.getBackendName() << std::endl;
-		std::cout << "Capture Device Format ID: " << cap.get(cv::CAP_PROP_FORMAT) << std::endl;
-		std::cout << "Capture Device Framerate: " << cap.get(cv::CAP_PROP_FPS) << std::endl;
-		std::cout << "Raw Frame Width X Height: " << rawFrame.cols << " X " << rawFrame.rows << std::endl;
-		std::cout << "Raw Frame Channels: " << rawFrame.channels() << std::endl;
-		std::cout << "Raw Frame Depth ID: " << rawFrame.depth() << std::endl;
-		std::cout << "Processed Frame Width X Height: " << frame.getImage().cols << " X " << frame.getImage().rows << std::endl;
-		std::cout << "Processed Frame Channels: " << frame.getImage().channels() << std::endl;
-		std::cout << "Processed Frame Depth ID: " << frame.getImage().depth() << std::endl;
+		printf("Capture Device API: %s\n", cap.getBackendName().c_str());
+		printf("Capture Device Format ID: %d\n", cap.get(cv::CAP_PROP_FORMAT));
+		printf("Frame Width X Height (Raw, Processed): %d X %d, %d X %d\n", 
+			rawFrame.cols, rawFrame.rows, frame.getImage().cols, frame.getImage().rows);
+		printf("Frame Channels (Raw, Processed): %d, %d\n", rawFrame.channels(), frame.getImage().channels());
+		printf("Frame Depth ID (Raw, Processed): %d, %d\n", rawFrame.depth(), frame.getImage().depth());
 	}
 
 	//Release camera

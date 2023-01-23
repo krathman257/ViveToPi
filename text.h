@@ -23,6 +23,7 @@ private:
 public:
 	Text() {}
 	Text(std::string fontFile){
+		//Read in font file
 		cv::Mat fontImage = cv::imread("./Fonts/" + fontFile, cv::IMREAD_GRAYSCALE);
 		if(!fontImage.empty()){
 			for(int i = 0; i < 94; i++){
@@ -40,6 +41,7 @@ public:
 			printf("ERROR: Font file not found\n");
 		}
 
+		//Set default styling
 		styling.red = 255;
 		styling.green = 255;
 		styling.blue = 255;
@@ -48,6 +50,7 @@ public:
 		styling.maxCharWidth = 128;
 	}
 
+	//Return single line of text as an image
 	cv::Mat getLine(std::string text){
 		cv::Mat wordImage(8, 8 * text.length(), CV_8UC4);
 		for(int i = 0; i < text.length(); i++){
@@ -63,11 +66,13 @@ public:
 		return wordImage;
 	}
 
+	//Return block of text as an image
 	cv::Mat getText(std::string text){
 		int xDim = 0, yDim = 1, curr_x = 0, delimPos = 0;
 		std::vector<cv::Mat> wordList;
 		std::string delim = " ";
 
+		//Divide text into words no longer than the Maximum Character Width
 		std::vector<std::string> words = splitString(text, " ");
 		for(int i = 0; i < words.size(); i++){
 			if(words[i] == ""){
@@ -80,6 +85,7 @@ public:
 			}
 		}
 
+		//Push words as images into list
 		for(std::string word : words){
 			wordList.push_back(getLine(word));
 
@@ -97,14 +103,13 @@ public:
 		xDim *= 8;
 		cv::Mat textImage(cv::Size(xDim, yDim), CV_8UC4, cv::Scalar(0));
 
+		//Place words as images onto final image
 		int xOff = 0, yOff = 0;
-		//printf("Dim: %d x %d\n", xDim / 8, yDim / 8);
 		for(cv::Mat word : wordList){
 			if(xOff != 0 && (xOff + word.cols) / 8 >= styling.maxCharWidth){
 				yOff += 8;
 				xOff = 0;
 			}
-			//printf("%d -> %d, %d -> %d\n", xOff, word.cols, yOff, word.rows);
 			word.copyTo(textImage(cv::Rect(xOff, yOff, word.cols, word.rows)));
 			xOff += word.cols + 8;
 		}
@@ -112,6 +117,7 @@ public:
 		return textImage; 
 	}
 
+	//Styling functions
 	void setStyling(int r, int g, int b, int a, float s, int w){
 		styling.red = r;
 		styling.green = g;

@@ -24,13 +24,18 @@ public:
 		loadInstructions("default");
 	}
 
+	//Process Instructions in the Instruction List
 	void processInstructions(){
 		std::vector<Layer> layers;
 
 		for(Instruction inst : instructionList){
+			
+			//New Layer
 			if(containsFlag(inst, 20)){
 				layers.push_back(processInstructions_getLayer(inst));
 			}
+
+			//Process Layer
 			else if(containsFlag(inst, 21)){
 				for(int i = 0; i < layers.size(); i++){
 					if(layers[i].getName() == inst.command[1]){
@@ -39,6 +44,8 @@ public:
 					}
 				}
 			}
+
+			//Draw Layer
 			else if(containsFlag(inst, 22)){
 				for(int i = 0; i < layers.size(); i++){
 					if(layers[i].getName() == inst.command[1]){
@@ -50,6 +57,7 @@ public:
 		}
 	}
 
+	//Process New Layer Instruction
 	Layer processInstructions_getLayer(Instruction inst){
 		Layer result;
 		
@@ -72,6 +80,7 @@ public:
 		return result;
 	}
 
+	//Process Process Layer Instruction
 	void processInstructions_processLayer(Instruction inst, std::vector<Layer> *layers, int index){
 		std::string input = "";
 		for(int f : inst.flags){
@@ -127,21 +136,8 @@ public:
 		}
 	}
 
-	void printInstructions(){
-		int counter = 0;
-		printf("****************\n"
-		       "* INSTRUCTIONS *\n"
-		       "****************\n");
-		for(Instruction inst : instructionList){
-			printf("%d) ", counter++);
-			for(std::string com : inst.command){
-				printf("%s ", com.c_str());
-			}
-			printf("\n");
-		}
-		printf("****************\n");
-	}
 
+	//Process Flags from input command
 	void processFlags(std::vector<std::string> command, std::vector<int> flags){
 		Instruction inst{ command, flags };
 		for(int f : flags){
@@ -167,20 +163,19 @@ public:
 				case 6: //Print information
 					printInfo(inst);
 					break;
-				case 10:
+				case 10://Push new Instruction
 					pushInstruction(inst);
 					refactorInstructions();
 					break;
-				case 12:
+				case 12://Edit Instruction
 					editInstruction(inst);
 					refactorInstructions();
 					break;
-				case 13:
+				case 13://Delete Instruction
 					deleteInstruction(inst);
 					refactorInstructions();
 					break;
 				default:
-					//printf("Flag Found: %d\n", f);
 					break;
 			}
 		}
@@ -189,6 +184,7 @@ public:
 	//Clear instruction list
 	void clearInstructions(){
 		instructionList = { };
+		canvas->clear();
 	}
 
 	//Save current instruction list to file
@@ -262,6 +258,7 @@ public:
 		}
 	}
 
+	//Push new Instruction to the Instruction List
 	void pushInstruction(Instruction inst){
 		int pushIndex = -1;
 		bool indexGiven = containsFlag(inst, 11);
@@ -281,6 +278,7 @@ public:
 		}
 	}
 
+	//Delete Instruction from the Instruction List
 	void deleteInstruction(Instruction inst){
 		int delIndex = -1;
 		if(canParseInteger(inst.command[1])){
@@ -297,6 +295,7 @@ public:
 		}
 	}
 
+	//Edit Instruction in the Instruction List
 	void editInstruction(Instruction inst){
 		int editIndex = -1;
 		if(canParseInteger(inst.command[1])){
@@ -315,10 +314,13 @@ public:
 		}
 	}
 
+	//Remove any invalid Instructions, which point to a Layer or image file that doesn't exist
 	void refactorInstructions(){
 		for(int i = 0; i < instructionList.size(); i++){
+
 			//Layer flag
 			if(containsFlag(instructionList[i], 20)){ 
+
 				//Image flag
 				if(containsFlag(instructionList[i], 202)){
 					if(!(doesImageExist(instructionList[i]))){
@@ -351,6 +353,7 @@ public:
 		}
 	}
 
+	//Returns whether Instruction points to valid Layer in Instruction List
 	bool isInstructionValid(Instruction inst, int listInd, int commandInd=1){
 		std::string layerName = inst.command[commandInd];
 		for(int i = 0; i < listInd; i++){
@@ -361,6 +364,7 @@ public:
 		return false;
 	}
 
+	//Returns whether Instruction contains a certain flag
 	bool containsFlag(Instruction inst, int query){
 		for(int f : inst.flags){
 			if(f == query){
@@ -370,8 +374,31 @@ public:
 		return false;
 	}
 
+	//Returns whether an image file has been loaded
 	bool doesImageExist(Instruction inst){
 		return canvas->getImageManager().doesImageExist(inst.command[inst.command.size()-1]);
+	}
+
+	//Sets run boolean to false, exiting the thread's while loop
+	void exit(bool *run){
+		*run = false;
+		printf("Exiting program. Goodbye...\n");
+	}
+	
+	//Message Printing Functions
+	void printInstructions(){
+		int counter = 0;
+		printf("****************\n"
+		       "* INSTRUCTIONS *\n"
+		       "****************\n");
+		for(Instruction inst : instructionList){
+			printf("%d) ", counter++);
+			for(std::string com : inst.command){
+				printf("%s ", com.c_str());
+			}
+			printf("\n");
+		}
+		printf("****************\n");
 	}
 
 	void printInfo(Instruction inst){
@@ -387,9 +414,13 @@ public:
 		printf("\n");
 	}
 
-	void exit(bool *run){
-		*run = false;
-		printf("Exiting program. Goodbye...\n");
+	void displayWelcomeMessage(){
+		printf("******************\n"
+		       "* Welcome to the *\n"
+		       "*   VIVE TO PI   *\n"
+		       "*  System  Menu  *\n"
+		       "******************\n"
+		);
 	}
 
 	void displayHelpMessage(){

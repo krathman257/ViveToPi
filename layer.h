@@ -26,6 +26,7 @@ public:
 		setImage(i);
 	}
 
+	//Return copy of Layer
 	Layer copy(){
 		Layer result;
 		result.setImage(image);
@@ -62,7 +63,7 @@ public:
 		}
 	}
 
-	//Overlay text, centered on the screen
+	//Add text, centered on the screen
 	void overlayText(std::string message, Text text){
 		cv::Mat messageImage = text.getText(message);
 		float fontScalar = text.getStyling().fontSize;
@@ -70,7 +71,7 @@ public:
 		overlay(Layer(messageImage));
 	}
 
-	//Overlay text, at coordinates
+	//Add text, at coordinates
 	void overlayText(std::string message, Text text, int x, int y){
 		cv::Mat messageImage = text.getText(message);
 		float fontScalar = text.getStyling().fontSize;
@@ -102,7 +103,6 @@ public:
 	}
 
 	//Rotate Layer
-	//NOTE: Crops to original dimensions. Fix?
 	void rotateLayer(int angle){
 		//Get center of image
 		cv::Point2f centerPoint((image.cols - 1) / 2.0, (image.rows - 1) / 2.0);
@@ -114,17 +114,7 @@ public:
 		cv::warpAffine(image, image, rotation_mat, image.size());
 	}
 
-	void setImage(cv::Mat i){
-		cv::cvtColor(i, image, cv::COLOR_BGR2BGRA);
-	}
 
-	void setName(std::string n){
-		name = n;
-	}
-
-	std::string getName(){
-		return name;
-	}
 
 	//Set flat alpha value across image
 	void setAlpha(float val){
@@ -136,6 +126,7 @@ public:
 		}
 	}
 
+	//Set alpha in circular pattern
 	void setAlphaPattern_Circular(int inner, int outer, bool middle=true, int min_alpha=0, int max_alpha=255){
 		int yCenter = image.rows / 2;
 		int xCenter = image.cols / 2;
@@ -149,9 +140,27 @@ public:
 		}
 	}
 
-	cv::Mat getImage(){ return image; }
-	int getHeight(){ return image.rows; }
-	int getWidth(){ return image.cols; }
+	//Get / Set functions
+	void setImage(cv::Mat i){
+		cv::cvtColor(i, image, cv::COLOR_BGR2BGRA);
+	}
+	cv::Mat getImage(){
+		return image;
+	}
+
+	void setName(std::string n){
+		name = n;
+	}
+	std::string getName(){
+		return name;
+	}
+
+	int getHeight(){
+		return image.rows;
+	}
+	int getWidth(){
+		return image.cols;
+	}
 };
 
 #endif

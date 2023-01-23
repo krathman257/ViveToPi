@@ -50,7 +50,7 @@ void highPriorityUnlock(priorityMutex pm){
 	pm.data->unlock();
 }
 
-//Functions to parse integers and floats from strings
+//Functions to parse integers from strings
 bool canParseInteger(std::string word){
 	try{
 		std::stoi(word);
@@ -70,6 +70,7 @@ int parseInteger(std::string word){
 	return result;
 }
 
+//Functions to parse floats from strings
 bool canParseFloat(std::string word){
 	try{
 		std::stof(word);

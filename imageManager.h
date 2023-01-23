@@ -21,6 +21,7 @@ public:
 	ImageManager(std::string path){
 		cv::Mat temp;
 
+		//Read directory for images
 		dpdf = opendir(path.c_str());
 		if(dpdf != NULL){
 			while(epdf = readdir(dpdf)){
@@ -30,7 +31,7 @@ public:
 					std::cout << 
 						epdf->d_name << 
 						" inserted, Raw Channels=" << temp.channels() << 
-						", Raw DepthID=" << temp.depth() << 
+						", Raw Depth ID=" << temp.depth() << 
 					std::endl;
 				}
 			}
@@ -49,6 +50,7 @@ public:
 		return i->second;
 	}
 
+	//Returns whether [name] is the name of a loaded image
 	bool doesImageExist(std::string name){
 		std::map<std::string, Layer>::iterator i = images.find(name);
 		return i != images.end();

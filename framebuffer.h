@@ -7,7 +7,6 @@
 #include <linux/fb.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <bitset>
 
 #define TARGET_BPP 32
 
@@ -63,15 +62,15 @@ public:
 		printf("Framebuffer successfully initialized\n");
 	}
 
+	//Place row of color data
 	void putRow(uchar* row, int x, int y, size_t size){
-		//printf("Putting Row (%d, %d) [%d]\n", x, y, size);
 		int pix_offset = x * (TARGET_BPP / 8) + y * fix_info.line_length;
 
 		memcpy((char*)(fbp+pix_offset), row, size);
 	}
 
 	//Change pixel (x, y) to color c
-	void putPixel(int x, int y, cv::Vec4b c) const {
+	void putPixel(int x, int y, cv::Vec4b c){
 		int pix_offset = x * (TARGET_BPP / 8) + y * fix_info.line_length;
 		
 		*((char*)(fbp + pix_offset)) = c[0];
