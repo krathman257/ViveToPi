@@ -97,6 +97,7 @@ The terminal verifies commands through a tree structure generated from a flat-te
 ### Major Features
 
 - Optimize the functions `Canvas::draw`, `Layer::overlay`, `Layer::resize` and `Layer::copy`. These functions are computationally expensive and performed frequently, and consequently drag down the framerate.
+  - O'Reilly's *Optimized C++* by Kurt Guntheroth
 - Add a 3D Image Manager, allowing a loaded `.OBJ` file to be loaded and turned into a transformable wireframe image.
 - Add an Audio Manager, allowing `.MP3` files to be loaded an played through the Vive's audio output.
 - Experiment with the Vive's Bluetooth motion tracking equipment.
